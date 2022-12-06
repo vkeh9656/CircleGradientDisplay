@@ -31,8 +31,19 @@ void CCircleGradientDisplayDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CCircleGradientDisplayDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
+
+void CCircleGradientDisplayDlg::ShowGrid()
+{
+	m_image_dc.SelectObject(&m_grid_pen);
+	m_image_dc.MoveTo(m_center_pos.x, 0);
+	m_image_dc.LineTo(m_center_pos.x, m_rect.bottom);
+
+	m_image_dc.MoveTo(0, m_center_pos.y);
+	m_image_dc.LineTo(m_rect.right, m_center_pos.y);
+}
 
 // CCircleGradientDisplayDlg 메시지 처리기
 
@@ -45,8 +56,19 @@ BOOL CCircleGradientDisplayDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	GetClientRect(m_rect);
+	m_center_pos = m_rect.CenterPoint();
 
+	m_image.Create(m_rect.Width(), m_rect.Height(), 32);
+	m_image_dc.Attach(m_image.GetDC());
+
+	m_grid_pen.CreatePen(PS_DOT, 1, RGB(168, 168, 168));
+	m_green_pen.CreatePen(PS_SOLID, 2, RGB(100, 255, 100));
+	SetBackgroundColor(RGB(0, 0, 0));
+
+	m_image_dc.SetBkColor(RGB(0, 0, 0));
+
+	ShowGrid();
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -56,9 +78,10 @@ BOOL CCircleGradientDisplayDlg::OnInitDialog()
 
 void CCircleGradientDisplayDlg::OnPaint()
 {
+	CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
+		
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
@@ -75,7 +98,8 @@ void CCircleGradientDisplayDlg::OnPaint()
 	}
 	else
 	{
-		CDialogEx::OnPaint();
+		m_image.Draw(dc, 0, 0);
+		// CDialogEx::OnPaint();
 	}
 }
 
@@ -86,3 +110,15 @@ HCURSOR CCircleGradientDisplayDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CCircleGradientDisplayDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	m_image_dc.Detach();
+	m_image.ReleaseDC();
+	
+	m_grid_pen.DeleteObject();
+	m_green_pen.DeleteObject();
+}

@@ -35,9 +35,14 @@ public:
 protected:
 	HICON m_hIcon;
 
+	
+
 	// 생성된 메시지 맵 함수
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnDestroy();
+	void ShowGrid();
 };
