@@ -16,6 +16,7 @@ private:
 	CPoint m_center_pos;
 
 	CPen m_grid_pen, m_green_pen, m_yellow_pen;
+	CBrush m_pie_brush;
 	
 
 // 생성입니다.

@@ -67,6 +67,8 @@ BOOL CCircleGradientDisplayDlg::OnInitDialog()
 	m_green_pen.CreatePen(PS_SOLID, 2, RGB(100, 255, 100));
 	m_yellow_pen.CreatePen(PS_SOLID, 2, RGB(255, 255, 0));
 	
+	m_pie_brush.CreateHatchBrush(HS_DIAGCROSS, RGB(255, 200, 0));
+
 	SetBackgroundColor(RGB(0, 0, 0));
 
 	m_image_dc.SetBkColor(RGB(0, 0, 0));
@@ -129,6 +131,8 @@ void CCircleGradientDisplayDlg::OnDestroy()
 	m_grid_pen.DeleteObject();
 	m_green_pen.DeleteObject();
 	m_yellow_pen.DeleteObject();
+
+	m_pie_brush.DeleteObject();
 }
 
 #include <math.h>
@@ -157,12 +161,19 @@ void CCircleGradientDisplayDlg::OnMouseMove(UINT nFlags, CPoint point)
 		//								radian = tan-1((point.y - m_center_pos.y) / (point.x - m_center_pos.x))
 		
 		double radian = atan2(m_center_pos.y - point.y, point.x - m_center_pos.x);
-	
+		
+		int start_x = (int)(cos(0) * 200 + m_center_pos.x);
+		int start_y = (int)(sin(0) * -200 + m_center_pos.y);
+
 		int end_x = (int)(cos(radian) * 200 + m_center_pos.x);
 		int end_y = (int)(sin(radian) * -200 + m_center_pos.y);
 
 		m_image_dc.SelectObject(&m_yellow_pen);
 		m_image_dc.Ellipse(end_x - 10, end_y - 10, end_x + 10, end_y + 10);
+
+		m_image_dc.SelectObject(&m_pie_brush);
+		m_image_dc.Pie(m_center_pos.x - 180, m_center_pos.y - 180, m_center_pos.x + 180, m_center_pos.y + 180,
+					start_x, start_y, end_x, end_y);
 
 		int degree = (int)(radian * 180 / PI);
 		// degree(기울기) 표시가 -가 나오지 않도록 하기 위해
