@@ -65,6 +65,7 @@ BOOL CCircleGradientDisplayDlg::OnInitDialog()
 
 	m_grid_pen.CreatePen(PS_DOT, 1, RGB(168, 168, 168));
 	m_green_pen.CreatePen(PS_SOLID, 2, RGB(100, 255, 100));
+	m_yellow_pen.CreatePen(PS_SOLID, 2, RGB(255, 255, 0));
 	
 	SetBackgroundColor(RGB(0, 0, 0));
 
@@ -127,6 +128,7 @@ void CCircleGradientDisplayDlg::OnDestroy()
 	
 	m_grid_pen.DeleteObject();
 	m_green_pen.DeleteObject();
+	m_yellow_pen.DeleteObject();
 }
 
 #include <math.h>
@@ -155,8 +157,14 @@ void CCircleGradientDisplayDlg::OnMouseMove(UINT nFlags, CPoint point)
 		//								radian = tan-1((point.y - m_center_pos.y) / (point.x - m_center_pos.x))
 		
 		double radian = atan2(m_center_pos.y - point.y, point.x - m_center_pos.x);
-		int degree = (int)(radian * 180 / PI);
+	
+		int end_x = (int)(cos(radian) * 200 + m_center_pos.x);
+		int end_y = (int)(sin(radian) * -200 + m_center_pos.y);
 
+		m_image_dc.SelectObject(&m_yellow_pen);
+		m_image_dc.Ellipse(end_x - 10, end_y - 10, end_x + 10, end_y + 10);
+
+		int degree = (int)(radian * 180 / PI);
 		// degree(기울기) 표시가 -가 나오지 않도록 하기 위해
 		if (degree < 0) degree = degree + 360;
 		

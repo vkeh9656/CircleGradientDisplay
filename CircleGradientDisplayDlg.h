@@ -15,7 +15,7 @@ private:
 	CRect m_rect;
 	CPoint m_center_pos;
 
-	CPen m_grid_pen, m_green_pen;
+	CPen m_grid_pen, m_green_pen, m_yellow_pen;
 	
 
 // 생성입니다.
