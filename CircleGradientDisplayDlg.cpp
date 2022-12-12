@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CCircleGradientDisplayDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_DESTROY()
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 
@@ -64,11 +65,16 @@ BOOL CCircleGradientDisplayDlg::OnInitDialog()
 
 	m_grid_pen.CreatePen(PS_DOT, 1, RGB(168, 168, 168));
 	m_green_pen.CreatePen(PS_SOLID, 2, RGB(100, 255, 100));
+	
 	SetBackgroundColor(RGB(0, 0, 0));
 
 	m_image_dc.SetBkColor(RGB(0, 0, 0));
-
 	ShowGrid();
+
+	m_image_dc.SelectObject(&m_green_pen);
+	m_image_dc.SelectStockObject(NULL_BRUSH);
+	m_image_dc.Ellipse(m_center_pos.x - 200, m_center_pos.y - 200, m_center_pos.x + 200, m_center_pos.y + 200);
+
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -121,4 +127,46 @@ void CCircleGradientDisplayDlg::OnDestroy()
 	
 	m_grid_pen.DeleteObject();
 	m_green_pen.DeleteObject();
+}
+
+#include <math.h>
+#define PI		3.1415926535
+
+void CCircleGradientDisplayDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (nFlags & MK_LBUTTON)
+	{
+		// 싹 지우고
+		m_image_dc.FillSolidRect(m_rect, RGB(0, 0, 0));
+		// 그리드 그리고
+		ShowGrid();
+
+		// 원 그리고
+		m_image_dc.SelectObject(&m_green_pen);
+		m_image_dc.SelectStockObject(NULL_BRUSH);
+		m_image_dc.Ellipse(m_center_pos.x - 200, m_center_pos.y - 200, m_center_pos.x + 200, m_center_pos.y + 200);
+
+		// 클릭한 상태로 선이 따라가게 하고
+		m_image_dc.SelectObject(&m_green_pen);
+		m_image_dc.MoveTo(m_center_pos);
+		m_image_dc.LineTo(point);
+
+		// y = ax, a = tan(radian),       (point.y - m_center_pos.y) / (point.x - m_center_pos.x) ==> y의 증가량 / x의 증가량 = tan(radian)
+		//								radian = tan-1((point.y - m_center_pos.y) / (point.x - m_center_pos.x))
+		
+		double radian = atan2(m_center_pos.y - point.y, point.x - m_center_pos.x);
+		int degree = (int)(radian * 180 / PI);
+
+		// degree(기울기) 표시가 -가 나오지 않도록 하기 위해
+		if (degree < 0) degree = degree + 360;
+		
+		CString str;
+		str.Format(L"기울기 : %d도", degree);
+		m_image_dc.SetTextColor(RGB(255, 255, 255));
+		m_image_dc.TextOut(point.x, point.y, str);
+
+		Invalidate(FALSE);
+	}
+
+	CDialogEx::OnMouseMove(nFlags, point);
 }
